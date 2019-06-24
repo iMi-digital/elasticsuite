@@ -167,20 +167,34 @@ abstract class AbstractAttribute extends Mapping
         }
 
         $value = array_map($this->attributeMappers[$mapperKey], $value);
-        $value = array_filter($value);
+        $value = $this->trimValues($value);
         $value = array_values($value);
         $values[$attributeCode] = $value;
 
         if ($attribute->usesSource()) {
             $optionTextFieldName = $this->getOptionTextFieldName($attributeCode);
             $optionTextValues    = $this->getIndexOptionsText($attribute, $storeId, $value);
-            // Filter empty values. Not using array_filter here because it could remove "0" string from values.
-            $optionTextValues    = array_diff(array_map('trim', $optionTextValues), ['', null, false]);
+            $optionTextValues    = $this->trimValues($optionTextValues);
             $optionTextValues    = array_values($optionTextValues);
             $values[$optionTextFieldName] = $optionTextValues;
         }
 
         return array_filter($values);
+    }
+
+    /**
+     * Filter empty values. Not using array_filter because it removes "0" string from values
+     *
+     * @param $values
+     *
+     * @return array
+     */
+    protected function trimValues($values)
+    {
+        return array_diff(
+            array_map('trim', $values),
+            ['', null, false]
+        );
     }
 
     /**
